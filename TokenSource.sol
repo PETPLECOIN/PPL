@@ -269,7 +269,6 @@ contract BurnableToken is BasicToken, Ownable {
 contract PETPLE is BurnableToken, DetailedERC20, ERC20Token,Pausable{
 	using SafeMath for uint256;
 
-	event Approval(address indexed owner, address indexed spender, uint256 value);
 	event LockerChanged(address indexed _address, uint256 amount);
 	
 	mapping(address => uint) public locker;
@@ -288,7 +287,7 @@ contract PETPLE is BurnableToken, DetailedERC20, ERC20Token,Pausable{
 
 	
 	function transfer(address _to, uint256 _value)  public whenNotPaused returns (bool){
-		require(balances[msg.sender] - _value >= locker[msg.sender]);
+		require(balances[msg.sender].sub(_value) >= locker[msg.sender]);
 		return super.transfer(_to, _value);
 	}
 
