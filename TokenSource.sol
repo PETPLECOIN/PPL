@@ -29,61 +29,57 @@ contract DetailedERC20 is ERC20 {
 
 contract BasicToken is ERC20Basic {
 	using SafeMath for uint256;
-	mapping(address => uint256) balances;
-	uint256 _totalSupply;
+	mapping (address => uint256) public balances;
+	
+	uint256 public _totalSupply;
+	
 	function totalSupply() public view returns (uint256) {
 		return _totalSupply;
 	}
 
 	function transfer(address _to, uint256 _value) public returns (bool) {
-		require(_to != address(0) && _value > 0 &&_value <= balances[msg.sender]);
-        balances[msg.sender] = balances[msg.sender].sub(_value);
+		require(_to != address(0), "ERC20: transfer to the zero address");
+		balances[msg.sender] = balances[msg.sender].sub(_value);
 		balances[_to] = balances[_to].add(_value);
 		emit Transfer(msg.sender, _to, _value);
 		
 		return true;
 	}
 	
-	function balanceOf(address _owner) public view returns (uint256 balance) {
+	function balanceOf(address _owner) public view  returns (uint256) {
 		return balances[_owner];
 	}
 }
 
 contract ERC20Token is BasicToken, ERC20 {
 	using SafeMath for uint256;
-	mapping (address => mapping (address => uint256)) allowed;
+	mapping (address => mapping (address => uint256)) public allowed;
 	
 	function approve(address _spender, uint256 _value) public returns (bool) {
-		require(_value == 0 || allowed[msg.sender][_spender] == 0);
+		require(_value == 0 || allowed[msg.sender][_spender] == 0, "ERC20: The amount must not be zero.");
 		allowed[msg.sender][_spender] = _value;
 		emit Approval(msg.sender, _spender, _value);
 		
 		return true;
 	}
 	
-	function allowance(address _owner, address _spender) public view returns (uint256 remaining) {
+	function allowance(address _owner, address _spender) public view returns (uint256) {
+		require(_owner != address(0), "ERC20: transfer _owner the zero address");
+		require(_spender != address(0), "ERC20: transfer _spender the zero address");
 		return allowed[_owner][_spender];
 	}
 
-	function increaseApproval(address _spender, uint256 _addedValue) public returns (bool success) {
+	function increaseAllowance(address _spender, uint256 _addedValue) public returns (bool) {
+		require(_spender != address(0), "ERC20: transfer to the zero address");
 		allowed[msg.sender][_spender] = allowed[msg.sender][_spender].add(_addedValue);
 		emit Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
 		
 		return true;
 	}
 	
-	function decreaseApproval(address _spender, uint256 _subtractedValue) public returns (bool success) {
-		uint256 oldValue = allowed[msg.sender][_spender];
-		if (_subtractedValue >= oldValue) {
-			allowed[msg.sender][_spender] = 0;
-		} else {
-			allowed[msg.sender][_spender] = oldValue.sub(_subtractedValue);
-		}
-		
-		emit Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
-		
+    	function decreaseAllowance(address _spender, uint256 _subtractedValue) public returns (bool) {
+		emit Approval(msg.sender, _spender,allowed[msg.sender][_spender].sub(_subtractedValue));
 		return true;
-		
 	}
 	
 }
@@ -91,7 +87,7 @@ contract ERC20Token is BasicToken, ERC20 {
 contract Ownable {
 
 	address public owner;
-	mapping (address => bool) admin;
+	mapping (address => bool) public admin;
 	
 	event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 	
@@ -101,28 +97,29 @@ contract Ownable {
 
 
 	modifier onlyOwner() {
-		require(msg.sender == owner);
+		require(msg.sender == owner, "ERC20: It must be the owner wallet.");
 		_;
 	}
 	
 	modifier onlyOwnerOrAdmin() {
-		require(msg.sender == owner || admin[msg.sender] == true);
+		require(msg.sender == owner || admin[msg.sender] == true, "ERC20: It must be the owner's wallet or the ADMIN's wallet.");
 		_;
 	}
 	
 	function transferOwnership(address newOwner) onlyOwner public {
-		require(newOwner != address(0) && newOwner != owner && admin[newOwner] == true);
+		require(newOwner != address(0) && newOwner != owner && admin[newOwner] == true, "ERC20: It must be an admin wallet, not the owner, and not the first wallet.");
 		emit OwnershipTransferred(owner, newOwner);
 		owner = newOwner;
 	}
 
 	function setAdmin(address newAdmin) onlyOwner public {
-		require(admin[newAdmin] != true && owner != newAdmin);
+		require(admin[newAdmin] != true && owner != newAdmin, "ERC20: It should not be the owner wallet, not the admin wallet.");
 		admin[newAdmin] = true;
+		
 	}
 	
 	function unsetAdmin(address Admin) onlyOwner public {
-		require(admin[Admin] != false && owner != Admin);
+		require(admin[Admin] != false && owner != Admin, "ERC20: It should not be the owner wallet, the admin wallet.");
 		admin[Admin] = false;
 	}
   
@@ -200,28 +197,34 @@ contract PauserRole {
 
 library SafeMath {
 	function mul(uint256 a, uint256 b) internal pure returns (uint256) {
-		if (a == 0 || b == 0) {
-			return 0;
+		if (a == 0) {
+		    return 0;
 		}
-		
+
 		uint256 c = a * b;
-		assert(c / a == b);
+		require(c / a == b, "SafeMath: multiplication overflow");
+
 		return c;
-	}
+	    }
+
 
 	function div(uint256 a, uint256 b) internal pure returns (uint256) {
-		uint256 c = a / b;
-		return c;
+		require(b > 0,  "SafeMath: division by zero");
+        uint256 c = a / b;
+        
+        return c;
 	}
 	
 	function sub(uint256 a, uint256 b) internal pure returns (uint256) {
-		assert(b <= a);
-		return a - b;
+		require(b <= a, "SafeMath: subtraction overflow");
+        uint256 c = a - b;
+
+        return c;
 	}
 
 	function add(uint256 a, uint256 b) internal pure returns (uint256) {
 		uint256 c = a + b;
-		assert(c >= a);
+		require(c >= a, "SafeMath: addition overflow");
 		return c;
 	}
 }
@@ -247,7 +250,7 @@ library Roles {
 	}
 
 	function has(Role storage role, address account) internal view returns (bool){
-		require(account != address(0));
+		require(account != address(0), "ERC20: It should not be the first wallet..");
 		return role.bearer[account];
 	}
 	
@@ -259,7 +262,6 @@ contract BurnableToken is BasicToken, Ownable {
 	function burn(uint256 _value) onlyOwner public {
 		balances[msg.sender] = balances[msg.sender].sub(_value);
 		_totalSupply = _totalSupply.sub(_value);
-		emit Burn(msg.sender, _value);
 		emit Transfer(msg.sender, address(0), _value);
 	}
 }
@@ -280,9 +282,8 @@ contract PETPLE is BurnableToken, DetailedERC20, ERC20Token,Pausable{
 	uint256 public constant TOTAL_SUPPLY = 10*(10**8)*(10**uint256(decimals));
 
 	constructor() DetailedERC20(name, symbol, decimals) public {
-		_totalSupply = TOTAL_SUPPLY;
-		balances[owner] = _totalSupply;
-		emit Transfer(address(0x0), msg.sender, _totalSupply);
+		balances[owner] = TOTAL_SUPPLY;
+		emit Transfer(address(0x0), msg.sender, TOTAL_SUPPLY);
 	}
 
 	
@@ -302,7 +303,8 @@ contract PETPLE is BurnableToken, DetailedERC20, ERC20Token,Pausable{
 		
 	}
 	
-	function lockOf(address _address) public view returns (uint256 _locker) {
+	
+	function lockOf(address _address) public view returns (uint256) {
 		return locker[_address];
 	}
 
