@@ -33,9 +33,6 @@ contract BasicToken is ERC20Basic {
 	
 	uint256 public _totalSupply;
 	
-	function totalSupply() public view returns (uint256) {
-		return _totalSupply;
-	}
 
 	function transfer(address _to, uint256 _value) public returns (bool) {
 		require(_to != address(0), "ERC20: transfer to the zero address");
@@ -65,7 +62,6 @@ contract ERC20Token is BasicToken, ERC20 {
 	
 	function allowance(address _owner, address _spender) public view returns (uint256) {
 		require(_owner != address(0), "ERC20: transfer _owner the zero address");
-		require(_spender != address(0), "ERC20: transfer _spender the zero address");
 		return allowed[_owner][_spender];
 	}
 
@@ -77,7 +73,8 @@ contract ERC20Token is BasicToken, ERC20 {
 		return true;
 	}
 	
-    	function decreaseAllowance(address _spender, uint256 _subtractedValue) public returns (bool) {
+	function decreaseAllowance(address _spender, uint256 _subtractedValue) public returns (bool) {
+		require(_spender != address(0), "ERC20: transfer to the zero address");
 		emit Approval(msg.sender, _spender,allowed[msg.sender][_spender].sub(_subtractedValue));
 		return true;
 	}
@@ -257,7 +254,7 @@ library Roles {
 }
 
 contract BurnableToken is BasicToken, Ownable {
-	event Burn(address indexed burner, uint256 amount);
+	
 
 	function burn(uint256 _value) onlyOwner public {
 		balances[msg.sender] = balances[msg.sender].sub(_value);
