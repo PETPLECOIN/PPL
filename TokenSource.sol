@@ -315,9 +315,7 @@ contract PETPLE is BurnableToken, DetailedERC20, ERC20Token,Pausable{
 		require(_recipients.length == _balances.length);
 		
 		for (uint i=0; i < _recipients.length; i++) {
-		    balances[msg.sender] = balances[msg.sender].sub(_balances[i]);
-			balances[_recipients[i]] = balances[_recipients[i]].add(_balances[i]);
-    		emit Transfer(msg.sender,_recipients[i],_balances[i]);
+		    transfer(_recipients[i],_balances[i]);
 		}
 	}
 
@@ -325,8 +323,7 @@ contract PETPLE is BurnableToken, DetailedERC20, ERC20Token,Pausable{
 		require(_recipients.length == _balances.length);
 		
 		for (uint i=0; i < _recipients.length; i++) {
-			locker[_recipients[i]] = _balances[i];
-		    emit LockerChanged(_recipients[i], _balances[i]);
+			setLock(_recipients[i], _balances[i]);
 		}
 	}
 	
