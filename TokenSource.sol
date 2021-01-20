@@ -293,7 +293,7 @@ contract PETPLE is BurnableToken, DetailedERC20, ERC20Token,Pausable{
 	}
 
 	function transferFrom(address _from, address _to, uint256 _value) public whenNotPaused returns (bool){
-		require( _from != address(0) && _to != address(0), "ERC20: It should not be the first wallet..")
+		require( _from != address(0) && _to != address(0), "ERC20: It should not be the first wallet..");
 		balances[_from] = balances[_from].sub(_value);
 		balances[_to] = balances[_to].add(_value);
 		allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
