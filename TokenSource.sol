@@ -75,7 +75,7 @@ contract ERC20Token is BasicToken, ERC20 {
 	
 	function decreaseAllowance(address _spender, uint256 _subtractedValue) public returns (bool) {
 		require(_spender != address(0), "ERC20: transfer to the zero address");
-		allowed[msg.sender][_spender] = allowed[msg.sender][_spender].sub(_addedValue);
+		allowed[msg.sender][_spender] = allowed[msg.sender][_spender].sub(_subtractedValue);
 		emit Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
 		
 		return true;
