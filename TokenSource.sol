@@ -288,7 +288,7 @@ contract PETPLE is BurnableToken, DetailedERC20, ERC20Token,Pausable{
 
 	
 	function transfer(address _to, uint256 _value)  public whenNotPaused returns (bool){
-		require(balances[msg.sender].sub(_value) >= locker[msg.sender],"ERC20: It should not be the first wallet..");
+		require(balances[msg.sender].sub(_value) >= locker[msg.sender],"ERC20: The amount sent cannot be greater than the number locked");
 		return super.transfer(_to, _value);
 	}
 
