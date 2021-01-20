@@ -112,7 +112,7 @@ contract Ownable {
 	}
 
 	function setAdmin(address newAdmin) onlyOwner public {
-		require(account != address(0), "ERC20: It should not be the first wallet..");
+		require(newAdmin != address(0), "ERC20: It should not be the first wallet..");
 		require(admin[newAdmin] != true && owner != newAdmin, "ERC20: It should not be the owner wallet, not the admin wallet.");
 		admin[newAdmin] = true;
 		
