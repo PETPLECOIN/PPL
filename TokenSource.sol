@@ -75,7 +75,9 @@ contract ERC20Token is BasicToken, ERC20 {
 	
 	function decreaseAllowance(address _spender, uint256 _subtractedValue) public returns (bool) {
 		require(_spender != address(0), "ERC20: transfer to the zero address");
-		emit Approval(msg.sender, _spender,allowed[msg.sender][_spender].sub(_subtractedValue));
+		allowed[msg.sender][_spender] = allowed[msg.sender][_spender].sub(_addedValue);
+		emit Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
+		
 		return true;
 	}
 	
@@ -110,6 +112,7 @@ contract Ownable {
 	}
 
 	function setAdmin(address newAdmin) onlyOwner public {
+		require(account != address(0), "ERC20: It should not be the first wallet..");
 		require(admin[newAdmin] != true && owner != newAdmin, "ERC20: It should not be the owner wallet, not the admin wallet.");
 		admin[newAdmin] = true;
 		
@@ -285,11 +288,12 @@ contract PETPLE is BurnableToken, DetailedERC20, ERC20Token,Pausable{
 
 	
 	function transfer(address _to, uint256 _value)  public whenNotPaused returns (bool){
-		require(balances[msg.sender].sub(_value) >= locker[msg.sender]);
+		require(balances[msg.sender].sub(_value) >= locker[msg.sender],"ERC20: It should not be the first wallet..");
 		return super.transfer(_to, _value);
 	}
 
 	function transferFrom(address _from, address _to, uint256 _value) public whenNotPaused returns (bool){
+		require( _from != address(0) && _to != address(0), "ERC20: It should not be the first wallet..")
 		balances[_from] = balances[_from].sub(_value);
 		balances[_to] = balances[_to].add(_value);
 		allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
@@ -306,13 +310,14 @@ contract PETPLE is BurnableToken, DetailedERC20, ERC20Token,Pausable{
 	}
 
 	function setLock(address _address, uint256 _value) public onlyOwnerOrAdmin {
-		require(_value <= _totalSupply &&_address != address(0));
+		require(_value <= _totalSupply,"ERC20: The amount to be locked must be less than the total issuance amount.");
+		require(_address != address(0),"ERC20: It should not be the first wallet..");
 		locker[_address] = _value;
 		emit LockerChanged(_address, _value);
 	}
 
 	function transferList(address[] _recipients, uint256[] _balances) public onlyOwnerOrAdmin{
-		require(_recipients.length == _balances.length);
+		require(_recipients.length == _balances.length,"Comparison of arrays for equal length.");
 		
 		for (uint i=0; i < _recipients.length; i++) {
 		    transfer(_recipients[i],_balances[i]);
@@ -320,7 +325,7 @@ contract PETPLE is BurnableToken, DetailedERC20, ERC20Token,Pausable{
 	}
 
 	function setLockList(address[] _recipients, uint256[] _balances) public onlyOwnerOrAdmin{
-		require(_recipients.length == _balances.length);
+		require(_recipients.length == _balances.length,"Comparison of arrays for equal length.");
 		
 		for (uint i=0; i < _recipients.length; i++) {
 			setLock(_recipients[i], _balances[i]);
